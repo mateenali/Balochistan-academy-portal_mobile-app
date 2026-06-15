@@ -100,10 +100,6 @@ class _QuizScreenState extends State<QuizScreen> {
               padding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
               children: [
                 Text(q.question, style: jk(20, weight: FontWeight.w800, spacing: -0.3)),
-                if (q.urdu.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(q.urdu, style: urdu(size: 16)),
-                ],
                 const SizedBox(height: 24),
 
                 // options
@@ -167,7 +163,7 @@ class _QuizScreenState extends State<QuizScreen> {
           // next button
           if (answered)
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
+              padding: EdgeInsets.fromLTRB(22, 8, 22, 24 + MediaQuery.of(context).viewPadding.bottom),
               child: Pressable(
                 onTap: _next,
                 child: Container(

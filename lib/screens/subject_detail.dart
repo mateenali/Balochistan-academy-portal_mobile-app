@@ -71,7 +71,6 @@ class SubjectDetailScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(subject.name, style: jk(26, weight: FontWeight.w800, color: Colors.white, spacing: -0.4)),
-                                Text(subject.urdu, style: urdu(size: 18, color: Colors.white.withOpacity(0.9))),
                                 const SizedBox(height: 6),
                                 Text('Class 10 · ${subject.lessons} lessons', style: jk(13, weight: FontWeight.w600, color: Colors.white70)),
                               ],

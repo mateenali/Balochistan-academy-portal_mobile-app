@@ -10,7 +10,7 @@ class EStudyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'eStudy',
+      title: 'Balochistan Academy Portal',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       home: const SplashScreen(),

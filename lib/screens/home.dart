@@ -4,7 +4,14 @@ import '../widgets.dart';
 import '../data.dart';
 import 'lesson.dart';
 import 'quiz.dart';
-import 'photo_solve.dart';
+import 'full_syllabus.dart';
+import 'self_test.dart';
+import 'parent_teacher_test.dart';
+import 'test_records.dart';
+import 'daily_test.dart';
+import 'monthly_test.dart';
+import 'result_reports.dart';
+import 'complaints.dart';
 
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onTab;
@@ -112,20 +119,59 @@ class HomeScreen extends StatelessWidget {
               ]),
             ),
           ),
+          const SizedBox(height: 26),
+          _sectionTitle('Test stats'),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22),
+            child: LayoutBuilder(
+              builder: (context, c) {
+                const gap = 11.0;
+                final w = (c.maxWidth - gap) / 2;
+                final cards = <Widget>[
+                  _statCard(Icons.fact_check_rounded, '24', 'Total tests', AppColors.indigo400, AppColors.indigo600),
+                  _statCard(Icons.verified_rounded, '19', 'Passed', AppColors.teal400, AppColors.teal600),
+                  _statCard(Icons.insights_rounded, '74%', 'Avg score', AppColors.sky, AppColors.sky2),
+                  _statCard(Icons.percent_rounded, '79%', 'Pass rate', AppColors.lime, AppColors.lime2),
+                  _statCard(Icons.calendar_month_rounded, '6', 'This month', AppColors.apricot, AppColors.apricot2),
+                ];
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: cards.map((x) => SizedBox(width: w, child: x)).toList(),
+                );
+              },
+            ),
+          ),
           const SizedBox(height: 24),
           _sectionTitle('Quick actions'),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: Row(children: [
-              _quick(Icons.chat_bubble_rounded, AppColors.indigo400, AppColors.indigo600, 'Ask AI', () => onTab(2)),
-              _quick(Icons.camera_alt_rounded, AppColors.teal400, AppColors.teal600, 'Photo-solve', () => _push(context, const PhotoSolveScreen())),
-              _quick(Icons.edit_rounded, AppColors.apricot, AppColors.apricot2, 'Quiz me', () => _push(context, const QuizScreen())),
-              _quick(Icons.picture_as_pdf_rounded, AppColors.rose, AppColors.rose2, 'Summarize', () => onTab(2)),
-            ]),
+            child: LayoutBuilder(
+              builder: (context, c) {
+                const gap = 12.0;
+                final w = (c.maxWidth - gap * 3) / 4;
+                final actions = <Widget>[
+                  _quick(Icons.menu_book_rounded, AppColors.indigo400, AppColors.indigo600, 'Full Syllabus', () => _push(context, const FullSyllabusScreen())),
+                  _quick(Icons.psychology_rounded, AppColors.teal400, AppColors.teal600, 'Self Test', () => _push(context, const SelfTestScreen())),
+                  _quick(Icons.supervisor_account_rounded, AppColors.violet, AppColors.violet2, 'Parent/Teacher Test', () => _push(context, const ParentTeacherTestScreen())),
+                  _quick(Icons.history_rounded, AppColors.sky, AppColors.sky2, 'Test Records', () => _push(context, const TestRecordsScreen())),
+                  _quick(Icons.today_rounded, AppColors.apricot, AppColors.apricot2, 'Daily Test', () => _push(context, const DailyTestScreen())),
+                  _quick(Icons.calendar_month_rounded, AppColors.rose, AppColors.rose2, 'Monthly Test', () => _push(context, const MonthlyTestScreen())),
+                  _quick(Icons.assessment_rounded, AppColors.lime, AppColors.lime2, 'Result Reports', () => _push(context, const ResultReportsScreen())),
+                  _quick(Icons.report_problem_rounded, AppColors.coral, AppColors.rose2, 'Complaints', () => _push(context, const ComplaintsScreen())),
+                ];
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: 18,
+                  children: actions.map((a) => SizedBox(width: w, child: a)).toList(),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 26),
-          _sectionTitle("Today's plan", urduText: 'آج کا منصوبہ', trailing: '2 of 4 done'),
+          _sectionTitle("Today's plan", trailing: '2 of 4 done'),
           const SizedBox(height: 12),
           ..._plan(context),
           const SizedBox(height: 26),
@@ -190,30 +236,55 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _quick(IconData icon, Color c1, Color c2, String label, VoidCallback onTap) {
-    return Expanded(
-      child: Pressable(
-        onTap: onTap,
-        child: Column(children: [
-          GradientTile(icon: icon, c1: c1, c2: c2, size: 60, radius: 18, iconSize: 24),
-          const SizedBox(height: 7),
-          Text(label, style: jk(11, weight: FontWeight.w700, color: AppColors.ink2)),
-        ]),
+  Widget _statCard(IconData icon, String value, String label, Color c1, Color c2) {
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+      child: Row(
+        children: [
+          GradientTile(icon: icon, c1: c1, c2: c2, size: 42, radius: 13, iconSize: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(value, style: jk(20, weight: FontWeight.w800)),
+                Text(label, style: jk(12, weight: FontWeight.w600, color: AppColors.ink3)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _sectionTitle(String title, {String? urduText, String? trailing, VoidCallback? onTrailing}) {
+  Widget _quick(IconData icon, Color c1, Color c2, String label, VoidCallback onTap) {
+    return Pressable(
+      onTap: onTap,
+      child: Column(children: [
+        GradientTile(icon: icon, c1: c1, c2: c2, size: 60, radius: 18, iconSize: 24),
+        const SizedBox(height: 7),
+        SizedBox(
+          height: 28,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: jk(11, weight: FontWeight.w700, color: AppColors.ink2, height: 1.15),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _sectionTitle(String title, {String? trailing, VoidCallback? onTrailing}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
-            if (urduText != null) Text(urduText, style: urdu(size: 12)),
-          ]),
+          Text(title, style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
           if (trailing != null)
             Pressable(onTap: onTrailing ?? () {}, child: Text(trailing, style: jk(12.5, weight: FontWeight.w700, color: AppColors.teal600))),
         ],

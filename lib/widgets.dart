@@ -279,6 +279,99 @@ class Pressable extends StatelessWidget {
   Widget build(BuildContext context) => _Pressable(onTap: onTap, child: child);
 }
 
+/// Standard inner-screen scaffold: back button, title, optional Urdu subtitle,
+/// a scrolling body and an optional pinned bottom action.
+class AppScreen extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final Widget? bottom;
+  const AppScreen({super.key, required this.title, required this.children, this.bottom});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 10, 22, 8),
+              child: Row(
+                children: [
+                  Pressable(
+                    onTap: () => Navigator.of(context).maybePop(),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14), boxShadow: cardShadow),
+                      child: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.ink),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: jk(18, weight: FontWeight.w800, spacing: -0.3)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(22, 6, 22, 24 + MediaQuery.of(context).viewPadding.bottom),
+                children: children,
+              ),
+            ),
+            if (bottom != null)
+              Padding(
+                padding: EdgeInsets.fromLTRB(22, 8, 22, 16 + MediaQuery.of(context).viewPadding.bottom),
+                child: bottom!,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Thin gradient progress bar used across report-style screens.
+class ProgressBar extends StatelessWidget {
+  final double value; // 0..100
+  final List<Color> colors;
+  final double height;
+  const ProgressBar({super.key, required this.value, this.colors = const [AppColors.teal400, AppColors.teal600], this.height = 8});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        return Container(
+          height: height,
+          decoration: BoxDecoration(color: AppColors.surfaceSunken, borderRadius: BorderRadius.circular(999)),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: (value.clamp(0, 100)) / 100),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, v, _) => Container(
+                width: c.maxWidth * v,
+                height: height,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: colors),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Small label chip.
 class Chip2 extends StatelessWidget {
   final String text;

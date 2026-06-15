@@ -88,7 +88,6 @@ class _TutorScreenState extends State<TutorScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('eStudy AI', style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
-                  Text('مصنوعی ذہانت ٹیوٹر', style: urdu(size: 13)),
                 ],
               ),
               Container(

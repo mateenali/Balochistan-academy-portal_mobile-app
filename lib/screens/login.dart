@@ -72,8 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text('Log in to your account', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
-                  const SizedBox(height: 4),
-                  Text('اپنے اکاؤنٹ میں لاگ ان کریں', style: urdu(size: 14, color: AppColors.ink3)),
                   const SizedBox(height: 26),
 
                   // email / phone
@@ -225,8 +223,6 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text('Welcome back', style: jk(26, weight: FontWeight.w800, color: Colors.white, spacing: -0.4)),
-          const SizedBox(height: 3),
-          Text('خوش آمدید', style: urdu(size: 15, color: Colors.white.withOpacity(0.85))),
         ],
       ),
     );

@@ -269,7 +269,6 @@ class _PhotoSolveScreenState extends State<PhotoSolveScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Solution', style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
-                  Text('حل', style: urdu(size: 13)),
                 ],
               ),
             ],

@@ -61,7 +61,6 @@ class ProgressScreen extends StatelessWidget {
                 Text('YOUR PROGRESS', style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink3, spacing: 1.4)),
                 const SizedBox(height: 6),
                 Text('Keep it up, Hadiya!', style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
-                Text('بہت خوب', style: urdu(size: 16)),
               ],
             ),
           ),
@@ -183,13 +182,7 @@ class ProgressScreen extends StatelessWidget {
           // mastery
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 24, 22, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Subject mastery', style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
-                Text('مہارت', style: urdu(size: 12.5)),
-              ],
-            ),
+            child: Text('Subject mastery', style: jk(17, weight: FontWeight.w700, spacing: -0.2)),
           ),
           const SizedBox(height: 12),
           ...mastery.asMap().entries.map((e) => Padding(

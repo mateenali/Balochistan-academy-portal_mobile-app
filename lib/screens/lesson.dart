@@ -125,7 +125,6 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text('Quadratic Equations', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
-                Text('درجہ دوم کی مساوات', style: urdu(size: 16)),
 
                 // AI summary card
                 const SizedBox(height: 18),

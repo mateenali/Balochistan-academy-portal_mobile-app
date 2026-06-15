@@ -74,7 +74,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     const SizedBox(height: 46),
                     Text(s.title, textAlign: TextAlign.center, style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
-                    Text(s.urduText, style: urdu(size: 17)),
                     const SizedBox(height: 14),
                     Text(s.body, textAlign: TextAlign.center, style: jk(14.5, weight: FontWeight.w500, color: AppColors.ink2, height: 1.55)),
                   ],

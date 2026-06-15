@@ -30,7 +30,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 Text('LIBRARY', style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink3, spacing: 1.4)),
                 const SizedBox(height: 6),
                 Text('Subjects', style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
-                Text('مضامین', style: urdu(size: 17)),
               ],
             ),
           ),
@@ -116,7 +115,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                       GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 48, radius: 15, iconSize: 23),
                       const SizedBox(height: 13),
                       Text(s.name, style: jk(15, weight: FontWeight.w800, spacing: -0.2)),
-                      Text(s.urdu, style: urdu(size: 13)),
                       const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
