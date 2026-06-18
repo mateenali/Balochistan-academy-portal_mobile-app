@@ -11,8 +11,25 @@ class SubjectsScreen extends StatefulWidget {
 }
 
 class _SubjectsScreenState extends State<SubjectsScreen> {
-  String selectedClass = 'Class 10';
   final classes = ['Class 8', 'Class 9', 'Class 10', 'FSc-I', 'FSc-II'];
+
+  /// The single class the student is currently enrolled in.
+  /// Classes before it are completed (read-only); classes after it are locked.
+  static const int enrolledIndex = 2;
+  int selectedIndex = enrolledIndex;
+
+  String get selectedClass => classes[selectedIndex];
+  bool get viewingCompleted => selectedIndex < enrolledIndex;
+
+  void _lockedToast() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text('Locked — finish ${classes[enrolledIndex]} to unlock this class',
+            style: jk(13.5, weight: FontWeight.w700, color: Colors.white)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,51 +62,95 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               separatorBuilder: (_, __) => const SizedBox(width: 9),
               itemBuilder: (_, i) {
                 final c = classes[i];
-                final active = c == selectedClass;
+                final selected = i == selectedIndex;
+                final completed = i < enrolledIndex;
+                final locked = i > enrolledIndex;
+                final fg = selected ? Colors.white : (locked ? AppColors.ink3 : AppColors.ink);
                 return Pressable(
-                  onTap: () => setState(() => selectedClass = c),
+                  onTap: locked ? _lockedToast : () => setState(() => selectedIndex = i),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                     decoration: BoxDecoration(
-                      color: active ? AppColors.ink : AppColors.surface,
+                      color: selected ? AppColors.ink : AppColors.surface,
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: active ? AppColors.ink : AppColors.line),
+                      border: Border.all(color: selected ? AppColors.ink : AppColors.line),
                     ),
-                    child: Text(c, style: jk(13, weight: FontWeight.w700, color: active ? Colors.white : AppColors.ink)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (completed) ...[
+                          Icon(Icons.check_circle_rounded, size: 14, color: selected ? Colors.white : AppColors.success),
+                          const SizedBox(width: 6),
+                        ] else if (locked) ...[
+                          const Icon(Icons.lock_rounded, size: 13, color: AppColors.ink3),
+                          const SizedBox(width: 6),
+                        ],
+                        Text(c, style: jk(13, weight: FontWeight.w700, color: fg)),
+                      ],
+                    ),
                   ),
                 );
               },
             ),
           ),
 
-          // progress banner
+          // status banner — read-only for completed classes, progress for the enrolled one
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 14, 22, 0),
-            child: AppCard(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: [
-                    ProgressRing(
-                      size: 54, stroke: 7, value: 62,
-                      center: Text('62%', style: jk(13, weight: FontWeight.w800)),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            child: viewingCompleted
+                ? AppCard(
+                    color: AppColors.surfaceSunken,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    child: Row(
                       children: [
-                        Text('$selectedClass progress', style: jk(15, weight: FontWeight.w800)),
-                        const SizedBox(height: 2),
-                        Text('8 subjects · 64 lessons left', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                        Container(
+                          width: 42, height: 42,
+                          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(13)),
+                          child: const Icon(Icons.lock_open_rounded, color: AppColors.ink2, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('$selectedClass · Completed', style: jk(15, weight: FontWeight.w800)),
+                              const SizedBox(height: 2),
+                              Text('Read-only — review lessons, but tests are disabled', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                  ]),
-                  const Icon(Icons.bar_chart_rounded, color: AppColors.teal500, size: 22),
-                ],
-              ),
-            ),
+                  )
+                : AppCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(children: [
+                          ProgressRing(
+                            size: 54, stroke: 7, value: 62,
+                            center: Text('62%', style: jk(13, weight: FontWeight.w800)),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(children: [
+                                Text('$selectedClass progress', style: jk(15, weight: FontWeight.w800)),
+                                const SizedBox(width: 8),
+                                Chip2('Enrolled', bg: AppColors.successBg, fg: AppColors.success),
+                              ]),
+                              const SizedBox(height: 2),
+                              Text('8 subjects · 64 lessons left', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                            ],
+                          ),
+                        ]),
+                        const Icon(Icons.bar_chart_rounded, color: AppColors.teal500, size: 22),
+                      ],
+                    ),
+                  ),
           ),
 
           // subject grid
@@ -107,7 +168,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 return AppCard(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => SubjectDetailScreen(subject: s),
+                    builder: (_) => SubjectDetailScreen(subject: s, readOnly: viewingCompleted),
                   )),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

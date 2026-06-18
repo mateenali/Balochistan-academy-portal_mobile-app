@@ -16,7 +16,8 @@ class _LessonItem {
 
 class SubjectDetailScreen extends StatelessWidget {
   final Subject subject;
-  const SubjectDetailScreen({super.key, required this.subject});
+  final bool readOnly;
+  const SubjectDetailScreen({super.key, required this.subject, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +74,18 @@ class SubjectDetailScreen extends StatelessWidget {
                                 Text(subject.name, style: jk(26, weight: FontWeight.w800, color: Colors.white, spacing: -0.4)),
                                 const SizedBox(height: 6),
                                 Text('Class 10 · ${subject.lessons} lessons', style: jk(13, weight: FontWeight.w600, color: Colors.white70)),
+                                if (readOnly) ...[
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(999)),
+                                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                      const Icon(Icons.lock_open_rounded, size: 13, color: Colors.white),
+                                      const SizedBox(width: 6),
+                                      Text('Read-only · completed class', style: jk(11.5, weight: FontWeight.w700, color: Colors.white)),
+                                    ]),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -117,6 +130,16 @@ class SubjectDetailScreen extends StatelessWidget {
                     border: l.active ? Border.all(color: AppColors.indigo400.withOpacity(0.5), width: 1.5) : null,
                     onTap: () {
                       if (l.test) {
+                        if (readOnly) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              behavior: SnackBarBehavior.floating,
+                              content: Text('Tests are disabled for completed classes',
+                                  style: jk(13.5, weight: FontWeight.w700, color: Colors.white)),
+                            ),
+                          );
+                          return;
+                        }
                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QuizScreen()));
                       } else {
                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LessonScreen()));
