@@ -13,6 +13,7 @@ import 'monthly_test.dart';
 import 'result_reports.dart';
 import 'complaints.dart';
 
+
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onTab;
   const HomeScreen({super.key, required this.onTab});
@@ -154,13 +155,14 @@ class HomeScreen extends StatelessWidget {
                 final w = (c.maxWidth - gap * 3) / 4;
                 final actions = <Widget>[
                   _quick(Icons.menu_book_rounded, AppColors.indigo400, AppColors.indigo600, 'Full Syllabus', () => _push(context, const FullSyllabusScreen())),
-                  _quick(Icons.psychology_rounded, AppColors.teal400, AppColors.teal600, 'Self Test', () => _push(context, const SelfTestScreen())),
+                  _quick(Icons.edit_note_rounded, AppColors.violet, AppColors.rose2, 'Self Test', () => _push(context, const SelfTestScreen())),
                   _quick(Icons.supervisor_account_rounded, AppColors.violet, AppColors.violet2, 'Parent/Teacher Test', () => _push(context, const ParentTeacherTestScreen())),
                   _quick(Icons.history_rounded, AppColors.sky, AppColors.sky2, 'Test Records', () => _push(context, const TestRecordsScreen())),
                   _quick(Icons.today_rounded, AppColors.apricot, AppColors.apricot2, 'Daily Test', () => _push(context, const DailyTestScreen())),
                   _quick(Icons.calendar_month_rounded, AppColors.rose, AppColors.rose2, 'Monthly Test', () => _push(context, const MonthlyTestScreen())),
                   _quick(Icons.assessment_rounded, AppColors.lime, AppColors.lime2, 'Result Reports', () => _push(context, const ResultReportsScreen())),
                   _quick(Icons.report_problem_rounded, AppColors.coral, AppColors.rose2, 'Complaints', () => _push(context, const ComplaintsScreen())),
+
                 ];
                 return Wrap(
                   spacing: gap,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
 import 'main_shell.dart';
+import 'signup.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -154,7 +155,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text("Don't have an account?  ", style: jk(14, weight: FontWeight.w500, color: AppColors.ink2)),
                       Pressable(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                          );
+                        },
                         child: Text('Sign up', style: jk(14, weight: FontWeight.w800, color: AppColors.indigo500)),
                       ),
                     ],
