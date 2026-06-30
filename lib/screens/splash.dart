@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../Api/api_client.dart';
 import 'onboarding.dart';
+import 'login.dart';
+import 'main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,13 +17,27 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2400), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 450),
-        pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: const OnboardingScreen()),
-      ));
-    });
+    _decideNext();
+  }
+
+  Future<void> _decideNext() async {
+    await Future.delayed(const Duration(milliseconds: 2400));
+    if (!mounted) return;
+
+    final loggedIn = await TokenManager.isLoggedIn();
+    final seenOnboarding = await TokenManager.hasSeenOnboarding();
+    if (!mounted) return;
+
+    final Widget next = loggedIn
+        ? const MainShell()
+        : seenOnboarding
+            ? const LoginScreen()
+            : const OnboardingScreen();
+
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 450),
+      pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: next),
+    ));
   }
 
   Widget _badge(IconData icon, Alignment a, Duration d) {

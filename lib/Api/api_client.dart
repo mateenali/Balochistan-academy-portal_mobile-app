@@ -175,6 +175,30 @@ class ApiClient {
     }
   }
 
+  // ── GET GRADES ──────────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getGrades() async {
+    try {
+      final response = await _dio.get('/api/grades');
+      final data = response.data as List;
+      return data.cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      print('Get Grades Error: ${e.response?.data}');
+      throw _handleError(e);
+    }
+  }
+
+  // ── GET MEDIUMS ─────────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getMediums() async {
+    try {
+      final response = await _dio.get('/api/mediums');
+      final data = response.data as List;
+      return data.cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      print('Get Mediums Error: ${e.response?.data}');
+      throw _handleError(e);
+    }
+  }
+
   // ── ERROR HANDLER ──────────────────────────────────────────
   String _handleError(DioException e) {
     if (e.response != null) {
@@ -204,6 +228,17 @@ class TokenManager {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'user_data';
+  static const String _onboardingKey = 'onboarding_seen';
+
+  static Future<void> setOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingKey, true);
+  }
+
+  static Future<bool> hasSeenOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_onboardingKey) ?? false;
+  }
 
   static Future<void> saveTokens(String accessToken, String refreshToken) async {
     final prefs = await SharedPreferences.getInstance();
