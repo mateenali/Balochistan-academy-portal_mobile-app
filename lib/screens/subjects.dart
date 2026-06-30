@@ -21,6 +21,72 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   String get selectedClass => classes[selectedIndex];
   bool get viewingCompleted => selectedIndex < enrolledIndex;
 
+  Widget _subjectCard(BuildContext context, Subject s) {
+    final done = s.progress >= 100 || viewingCompleted;
+    return AppCard(
+      clip: true,
+      padding: EdgeInsets.zero,
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => SubjectDetailScreen(subject: s, readOnly: viewingCompleted),
+      )),
+      child: Stack(
+        children: [
+          // soft accent wash tinted by the subject colour
+          Positioned(
+            right: -26, top: -26,
+            child: Container(
+              width: 88, height: 88,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: s.c1.withOpacity(0.10)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 46, radius: 15, iconSize: 22),
+                    done
+                        ? Container(
+                            width: 26, height: 26,
+                            decoration: const BoxDecoration(color: AppColors.successBg, shape: BoxShape.circle),
+                            child: const Icon(Icons.check_rounded, size: 15, color: AppColors.success),
+                          )
+                        : Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(color: s.c1.withOpacity(0.14), borderRadius: BorderRadius.circular(999)),
+                            child: Text('${s.progress}%', style: jk(11.5, weight: FontWeight.w800, color: s.c2)),
+                          ),
+                  ],
+                ),
+                const SizedBox(height: 13),
+                Text(s.name, style: jk(15.5, weight: FontWeight.w800, spacing: -0.2)),
+                const SizedBox(height: 3),
+                Text('${s.lessons} lessons', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                const Spacer(),
+                ProgressBar(value: done ? 100 : s.progress.toDouble(), colors: [s.c1, s.c2], height: 6),
+                const SizedBox(height: 9),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      done ? 'Completed' : 'Continue',
+                      style: jk(12, weight: FontWeight.w700, color: done ? AppColors.success : s.c2),
+                    ),
+                    Icon(done ? Icons.visibility_rounded : Icons.arrow_forward_rounded, size: 15, color: AppColors.ink3),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _lockedToast() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -160,38 +226,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: 0.82,
+                crossAxisCount: 2, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: 0.76,
               ),
               itemCount: kSubjects.length,
-              itemBuilder: (_, i) {
-                final s = kSubjects[i];
-                return AppCard(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => SubjectDetailScreen(subject: s, readOnly: viewingCompleted),
-                  )),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 48, radius: 15, iconSize: 23),
-                      const SizedBox(height: 13),
-                      Text(s.name, style: jk(15, weight: FontWeight.w800, spacing: -0.2)),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('${s.lessons} lessons', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
-                          Container(
-                            width: 26, height: 26,
-                            decoration: const BoxDecoration(color: AppColors.surfaceSunken, shape: BoxShape.circle),
-                            child: const Icon(Icons.chevron_right_rounded, size: 15, color: AppColors.ink2),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
+              itemBuilder: (_, i) => _subjectCard(context, kSubjects[i]),
             ),
           ),
         ],

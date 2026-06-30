@@ -65,46 +65,78 @@ class ProgressScreen extends StatelessWidget {
             ),
           ),
 
-          // hero XP card
+          // hero coins card
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
             child: AppCard(
               clip: true,
               padding: EdgeInsets.zero,
-              gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A42C9), AppColors.indigo500]),
+              gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.gold, AppColors.apricot2]),
               child: Stack(
                 children: [
-                  Positioned(right: -20, bottom: -30, child: Container(width: 130, height: 130, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.08)))),
+                  Positioned(right: -20, bottom: -30, child: Container(width: 130, height: 130, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.10)))),
+                  // faint giant coin behind
+                  Positioned(right: -16, top: -18, child: Icon(Icons.monetization_on_rounded, size: 120, color: Colors.white.withOpacity(0.10))),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                    child: Column(
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('TOTAL XP', style: jk(12, weight: FontWeight.w700, color: Colors.white70, spacing: 0.5)),
-                            const SizedBox(height: 2),
-                            Text('2,480', style: jk(40, weight: FontWeight.w800, color: Colors.white, spacing: -1)),
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(999)),
-                              child: Text('Level 7 · Scholar', style: jk(12.5, weight: FontWeight.w700, color: Colors.white)),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('TOTAL COINS', style: jk(12, weight: FontWeight.w700, color: Colors.white70, spacing: 0.5)),
+                                const SizedBox(height: 2),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.paid_rounded, color: Colors.white, size: 30),
+                                    const SizedBox(width: 8),
+                                    Text('2,480', style: jk(40, weight: FontWeight.w800, color: Colors.white, spacing: -1)),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.20), borderRadius: BorderRadius.circular(999)),
+                                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                    const Icon(Icons.trending_up_rounded, color: Colors.white, size: 13),
+                                    const SizedBox(width: 5),
+                                    Text('+120 earned today', style: jk(12.5, weight: FontWeight.w700, color: Colors.white)),
+                                  ]),
+                                ),
+                              ],
                             ),
+                            // FloatY(
+                            //   distance: 8,
+                            //   child: const Orb(
+                            //     size: 84,
+                            //     color: AppColors.gold,
+                            //     shadow: Color(0x80F0742E),
+                            //     child: Icon(Icons.monetization_on_rounded, color: Colors.white, size: 42),
+                            //   ),
+                            // ),
                           ],
                         ),
-                        ProgressRing(
-                          size: 92, stroke: 9, value: 68,
-                          colors: const [Color(0xFFFFD9B8), AppColors.apricot],
-                          track: Colors.white24,
-                          center: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.local_fire_department, color: Colors.white, size: 22),
-                              const SizedBox(height: 1),
-                              Text('7 days', style: jk(13, weight: FontWeight.w800, color: Colors.white)),
-                            ],
+                        const SizedBox(height: 16),
+                        Pressable(
+                          onTap: () {},
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 18),
+                                const SizedBox(width: 10),
+                                Text('Redeem rewards', style: jk(13.5, weight: FontWeight.w800, color: Colors.white)),
+                                const Spacer(),
+                                Text('Store', style: jk(12.5, weight: FontWeight.w700, color: Colors.white70)),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                              ],
+                            ),
                           ),
                         ),
                       ],

@@ -18,7 +18,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _langEn = true;
+  // bool _langEn = true; // language option disabled
   bool _reminders = true;
 
   final _rows = [
@@ -102,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 child: Row(
                   children: [
-                    _statCol('2,480', 'XP'),
+                    _statCol('2,480', 'Coins'),
                     _divider(),
                     _statCol('156', 'Lessons'),
                     _divider(),
@@ -114,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           // language
+          /*
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 0, 22, 12),
             child: AppCard(
@@ -143,6 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+          */
 
           // reminders
           Padding(
@@ -266,6 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(width: 1, height: 30, color: AppColors.line);
   }
 
+  /*
   Widget _langBtn(String text, bool isEn) {
     final active = _langEn == isEn;
     return Pressable(
@@ -282,4 +285,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+  */
 }
