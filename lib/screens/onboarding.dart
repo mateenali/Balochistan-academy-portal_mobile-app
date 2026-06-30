@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
-import 'main_shell.dart';
+import '../Api/api_client.dart';
+import 'login.dart';
 
 class _Slide {
   final IconData icon;
@@ -32,9 +33,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int i = 0;
 
   void _finish() {
+    TokenManager.setOnboardingSeen();
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: const MainShell()),
+      pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: const LoginScreen()),
     ));
   }
 

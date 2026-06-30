@@ -184,7 +184,7 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('eStudy', style: jk(18, weight: FontWeight.w800, color: Colors.white, spacing: -0.3)),
+              // Text('eStudy', style: jk(18, weight: FontWeight.w800, color: Colors.white, spacing: -0.3)),
               const Spacer(),
             ],
           ),
@@ -210,6 +210,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text('Welcome back', style: jk(26, weight: FontWeight.w800, color: Colors.white, spacing: -0.4)),
+          
         ],
       ),
     );
