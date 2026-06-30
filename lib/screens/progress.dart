@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../Api/api_client.dart';
 
 class _WeekBar {
   final String day;
@@ -24,11 +25,45 @@ class _Badge {
   const _Badge(this.icon, this.c, this.shadow, this.label);
 }
 
-class ProgressScreen extends StatelessWidget {
+class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
 
   @override
+  State<ProgressScreen> createState() => _ProgressScreenState();
+}
+
+class _ProgressScreenState extends State<ProgressScreen> {
+  Map<String, dynamic>? _user;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUser();
+  }
+
+  Future<void> _fetchUser() async {
+    try {
+      final apiClient = ApiClient();
+      final user = await apiClient.getCurrentUser();
+      setState(() {
+        _user = user;
+        _loading = false;
+      });
+    } catch (e) {
+      print('Failed to fetch user: $e');
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final week = [
       const _WeekBar('M', 0.60), const _WeekBar('T', 0.85), const _WeekBar('W', 0.40),
       const _WeekBar('T', 0.95), const _WeekBar('F', 0.70), const _WeekBar('S', 0.30),
@@ -60,7 +95,10 @@ class ProgressScreen extends StatelessWidget {
               children: [
                 Text('YOUR PROGRESS', style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink3, spacing: 1.4)),
                 const SizedBox(height: 6),
-                Text('Keep it up, Hadiya!', style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
+                Text(
+                  'Keep it up, ${_user?['name'] ?? 'User'}!',
+                  style: jk(27, weight: FontWeight.w800, spacing: -0.5),
+                ),
               ],
             ),
           ),

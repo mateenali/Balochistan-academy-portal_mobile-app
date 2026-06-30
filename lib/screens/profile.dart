@@ -22,6 +22,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // bool _langEn = true; // language option disabled
   bool _reminders = true;
 
+
+  Map<String, dynamic>? _user;
+  bool _loading = true;
+
   final _rows = [
     _MenuRow(Icons.track_changes, AppColors.indigo400, AppColors.indigo600, 'My goals', 'FSc Pre-Medical'),
     _MenuRow(Icons.calendar_today_rounded, AppColors.teal400, AppColors.teal600, 'Study schedule', 'Daily · 6:00 PM'),
@@ -30,11 +34,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ];
 
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchUser();
+  }
+
+
+  Future<void> _fetchUser() async {
+    try {
+      final apiClient = ApiClient();
+      final user = await apiClient.getCurrentUser();
+      setState(() {
+        _user = user;
+        _loading = false;
+      });
+    } catch (e) {
+      print(' Failed to fetch user: $e');
+      setState(() => _loading = false);
+    }
+  }
+
   Future<void> _logout() async {
     try {
       final apiClient = ApiClient();
       await apiClient.logout();
-      print(' Logout successful');
+      print('Logout successful');
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -42,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     } catch (e) {
       print(' Logout error: $e');
-
       await TokenManager.clearTokens();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -53,6 +77,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -90,15 +123,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         border: Border.all(color: Colors.white.withOpacity(0.4), width: 3),
                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 16), spreadRadius: -10)],
                       ),
-                      child: Center(child: Text('HB', style: jk(30, weight: FontWeight.w800, color: Colors.white))),
+                      child: Center(
+
+                        child: Text(
+                          _user?['name'] != null && _user!['name'].toString().isNotEmpty
+                              ? _user!['name'].toString().split(' ').map((e) => e[0]).join('').toUpperCase()
+                              : 'U',
+                          style: jk(30, weight: FontWeight.w800, color: Colors.white),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hadiya Baloch', style: jk(22, weight: FontWeight.w800, color: Colors.white)),
-                          Text('Class 10 · Quetta', style: jk(13.5, weight: FontWeight.w600, color: Colors.white70)),
+
+                          Text(_user?['name'] ?? 'User', style: jk(22, weight: FontWeight.w800, color: Colors.white)),
+
+                          Text(
+                            '${_user?['gradeCode'] ?? ''} · ${_user?['board'] ?? ''}',
+                            style: jk(13.5, weight: FontWeight.w600, color: Colors.white70),
+                          ),
                           const SizedBox(height: 7),
                           Row(
                             children: [
@@ -236,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           )),
 
-
+          // logout
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 6, 22, 0),
             child: Pressable(
