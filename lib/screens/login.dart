@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
 import 'main_shell.dart';
+import 'signup.dart';
+import '../Api/api_client.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,49 +13,57 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailCtrl = TextEditingController();
+  final _usernameCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
   String? _error;
 
+  final ApiClient _apiClient = ApiClient();
+
   @override
   void dispose() {
-    _emailCtrl.dispose();
+    _usernameCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
   }
 
   void _login() async {
-    final email = _emailCtrl.text.trim();
-    final pass = _passCtrl.text;
-    if (email.isEmpty || pass.isEmpty) {
+    final username = _usernameCtrl.text.trim();
+    final password = _passCtrl.text;
+    if (username.isEmpty || password.isEmpty) {
       setState(() => _error = 'Please fill in all fields.');
       return;
     }
-    await _enter();
+    await _enter(username, password);
   }
 
-  /// Skip credentials and jump straight into the app with a demo account.
-  void _demoLogin() async {
-    _emailCtrl.text = 'demo@estudy.pk';
-    _passCtrl.text = 'demo1234';
-    await _enter();
-  }
 
-  Future<void> _enter() async {
+  Future<void> _enter(String username, String password) async {
     setState(() {
       _error = null;
       _loading = true;
     });
-    // Simulate async auth
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _loading = false);
-    Navigator.of(context).pushReplacement(PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: const MainShell()),
-    ));
+
+    try {
+      final response = await _apiClient.login(username, password);
+      print('Login successful: ${response['user']}');
+
+      if (!mounted) return;
+      setState(() => _loading = false);
+
+      Navigator.of(context).pushReplacement(PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (_, a, __) => FadeTransition(opacity: a, child: const MainShell()),
+      ));
+    } catch (e) {
+      print('Login failed: $e');
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   @override
@@ -62,9 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.appBg,
       body: Column(
         children: [
-          // ── gradient header ────────────────────────────────────────────────
           _Header(),
-          // ── scrollable form ────────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(24, 28, 24, 40 + MediaQuery.of(context).padding.bottom),
@@ -74,17 +82,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text('Log in to your account', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
                   const SizedBox(height: 26),
 
-                  // email / phone
                   _Field(
-                    controller: _emailCtrl,
-                    label: 'Email or phone number',
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: _usernameCtrl,
+                    label: 'Username',
+                    icon: Icons.person_outline_rounded,
+                    keyboardType: TextInputType.text,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 14),
 
-                  // password
                   _Field(
                     controller: _passCtrl,
                     label: 'Password',
@@ -103,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // forgot password
                   Align(
                     alignment: Alignment.centerRight,
                     child: Pressable(
@@ -116,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // error banner
                   if (_error != null) ...[
                     _ErrorBanner(_error!),
                     const SizedBox(height: 14),
@@ -124,37 +128,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 6),
 
-                  // login button
                   _loading
                       ? _LoadingButton()
                       : PrimaryButton(
-                          label: 'Log in',
-                          icon: Icons.arrow_forward_rounded,
-                          onTap: _login,
-                        ),
-
-                  const SizedBox(height: 12),
-
-                  // demo login
-                  GhostButton(
-                    label: 'Try demo account',
-                    icon: Icons.play_circle_outline_rounded,
-                    color: AppColors.indigo500,
-                    borderColor: AppColors.indigo50,
-                    onTap: _loading ? () {} : _demoLogin,
+                    label: 'Log in',
+                    icon: Icons.arrow_forward_rounded,
+                    onTap: _login,
                   ),
 
                   const SizedBox(height: 28),
                   _OrDivider(),
                   const SizedBox(height: 22),
 
-                  // sign up row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("Don't have an account?  ", style: jk(14, weight: FontWeight.w500, color: AppColors.ink2)),
                       Pressable(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                          );
+                        },
                         child: Text('Sign up', style: jk(14, weight: FontWeight.w800, color: AppColors.indigo500)),
                       ),
                     ],
@@ -169,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ── Sub-widgets ──────────────────────────────────────────────────────────────
+// ── Sub-widgets──────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
   @override
@@ -190,15 +186,6 @@ class _Header extends StatelessWidget {
             children: [
               Text('eStudy', style: jk(18, weight: FontWeight.w800, color: Colors.white, spacing: -0.3)),
               const Spacer(),
-              // Container(
-              //   padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-              //   decoration: BoxDecoration(
-              //     color: Colors.white.withValues(alpha: 0.18),
-              //     borderRadius: BorderRadius.circular(999),
-              //     border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-              //   ),
-              //   child: Text('Made for Balochistan', style: jk(11, weight: FontWeight.w700, color: Colors.white)),
-              // ),
             ],
           ),
           const SizedBox(height: 24),
@@ -214,7 +201,7 @@ class _Header extends StatelessWidget {
                   shadow: Color(0x50454DD4),
                   child: Icon(Icons.psychology_rounded, size: 50, color: AppColors.indigo500),
                 ),
-                const Positioned(
+                Positioned(
                   top: -6, right: -8,
                   child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 22),
                 ),
