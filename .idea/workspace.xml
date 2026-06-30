@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4760734c-c6cf-46d6-a79a-beea6b2b793f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/Api/api_client.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/estudy.iml" beforeDir="false" afterPath="$PROJECT_DIR$/estudy.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/Api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Api/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/home.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/profile.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/profile.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/signup.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/signup.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

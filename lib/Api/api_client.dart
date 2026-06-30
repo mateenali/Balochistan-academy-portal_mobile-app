@@ -157,7 +157,8 @@ class ApiClient {
     }
   }
 
-  // ── GET CURRENT USER ────────────────────────────────────────
+
+// ── GET CURRENT USER ────────────────────────────────────────
   Future<Map<String, dynamic>> getCurrentUser() async {
     try {
       final token = await TokenManager.getAccessToken();
@@ -169,6 +170,15 @@ class ApiClient {
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
+
+      print('📤 Raw User Data from /me: ${response.data}');
+
+      // API response mein 'user' key ke ander data hai
+      if (response.data != null && response.data['user'] != null) {
+        print('✅ Extracted user data: ${response.data['user']}');
+        return response.data['user'];
+      }
+
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);
