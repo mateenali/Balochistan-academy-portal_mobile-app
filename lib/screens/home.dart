@@ -12,16 +12,57 @@ import 'daily_test.dart';
 import 'monthly_test.dart';
 import 'result_reports.dart';
 import 'complaints.dart';
+import '../Api/api_client.dart';
 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final ValueChanged<int> onTab;
   const HomeScreen({super.key, required this.onTab});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  Map<String, dynamic>? _user;
+  bool _loading = true;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUser();
+  }
+
+
+  Future<void> _fetchUser() async {
+    try {
+      final apiClient = ApiClient();
+      final user = await apiClient.getCurrentUser();
+      setState(() {
+        _user = user;
+        _loading = false;
+      });
+    } catch (e) {
+      print('Failed to fetch user: $e');
+      setState(() => _loading = false);
+    }
+  }
 
   void _push(BuildContext c, Widget w) => Navigator.of(c).push(MaterialPageRoute(builder: (_) => w));
 
   @override
   Widget build(BuildContext context) {
+
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -36,13 +77,14 @@ class HomeScreen extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Assalam-o-Alaikum 👋', style: jk(12.5, weight: FontWeight.w700, color: AppColors.ink3)),
                   const SizedBox(height: 2),
-                  Text('Hadiya Baloch', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
+
+                  Text(_user?['name'] ?? 'User', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
                 ]),
                 Row(children: [
                   _iconBtn(Icons.notifications_none_rounded, dot: true),
                   const SizedBox(width: 8),
                   Pressable(
-                    onTap: () => onTab(4),
+                    onTap: () => widget.onTab(4),
                     child: Container(
                       width: 44, height: 44,
                       decoration: const BoxDecoration(
@@ -50,7 +92,15 @@ class HomeScreen extends StatelessWidget {
                         gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFD9B8), AppColors.apricot]),
                         boxShadow: cardShadow,
                       ),
-                      child: Center(child: Text('HB', style: jk(16, weight: FontWeight.w800, color: Colors.white))),
+
+                      child: Center(
+                        child: Text(
+                          _user?['name'] != null && _user!['name'].toString().isNotEmpty
+                              ? _user!['name'].toString().split(' ').map((e) => e[0]).join('').toUpperCase()
+                              : 'U',
+                          style: jk(16, weight: FontWeight.w800, color: Colors.white),
+                        ),
+                      ),
                     ),
                   ),
                 ]),
@@ -64,7 +114,7 @@ class HomeScreen extends StatelessWidget {
             child: AppCard(
               radius: 18,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              onTap: () => onTab(2),
+              onTap: () => widget.onTab(2),
               child: Row(children: [
                 const Icon(Icons.search_rounded, color: AppColors.ink3, size: 20),
                 const SizedBox(width: 12),
@@ -162,7 +212,6 @@ class HomeScreen extends StatelessWidget {
                   _quick(Icons.calendar_month_rounded, AppColors.rose, AppColors.rose2, 'Monthly Test', () => _push(context, const MonthlyTestScreen())),
                   _quick(Icons.assessment_rounded, AppColors.lime, AppColors.lime2, 'Result Reports', () => _push(context, const ResultReportsScreen())),
                   _quick(Icons.report_problem_rounded, AppColors.coral, AppColors.rose2, 'Complaints', () => _push(context, const ComplaintsScreen())),
-
                 ];
                 return Wrap(
                   spacing: gap,
@@ -177,7 +226,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           ..._plan(context),
           const SizedBox(height: 26),
-          _sectionTitle('Explore subjects', trailing: 'See all', onTrailing: () => onTab(1)),
+          _sectionTitle('Explore subjects', trailing: 'See all', onTrailing: () => widget.onTab(1)),
           const SizedBox(height: 14),
           SizedBox(
             height: 96,
@@ -189,7 +238,7 @@ class HomeScreen extends StatelessWidget {
               itemBuilder: (_, k) {
                 final s = kSubjects[k];
                 return Pressable(
-                  onTap: () => onTab(1),
+                  onTap: () => widget.onTab(1),
                   child: Column(children: [
                     GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 62, radius: 20, iconSize: 28),
                     const SizedBox(height: 8),
