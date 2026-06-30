@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../Api/api_client.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,6 +23,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _loading = false;
   String? _error;
 
+  final ApiClient _apiClient = ApiClient();
+
   @override
   void dispose() {
     _fullNameCtrl.dispose();
@@ -40,6 +43,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final password = _passwordCtrl.text;
     final grade = _gradeCtrl.text.trim();
     final medium = _mediumCtrl.text.trim();
+    final phone = _phoneCtrl.text.trim();
+    final city = _cityCtrl.text.trim();
 
     if (fullName.isEmpty || username.isEmpty || password.isEmpty || grade.isEmpty || medium.isEmpty) {
       setState(() => _error = 'Please fill in all required fields.');
@@ -51,30 +56,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _loading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _loading = false);
+    try {
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Account created successfully! Please login.'),
-        backgroundColor: AppColors.teal500,
-        duration: Duration(seconds: 2),
-      ),
-    );
+      final userData = {
+        'name': fullName,
+        'username': username,
+        'password': password,
+        'gradeCode': grade,
+        'medium': medium,
+        'phone': phone,
+        'city': city,
+      };
 
-    Navigator.of(context).pop();
+      print(' Register Request: $userData');
+      final response = await _apiClient.register(userData);
+      print('Register Response: $response');
+
+      if (!mounted) return;
+      setState(() => _loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully! Please login.'),
+          backgroundColor: AppColors.teal500,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      print('Register Error: $e');
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: AppColors.appBg,
       body: Column(
         children: [
-          // ── gradient header ────────────────────────────────────────────────
           _SignUpHeader(),
-          // ── scrollable form ────────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(24, 28, 24, 40 + MediaQuery.of(context).padding.bottom),
@@ -83,16 +110,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 children: [
                   Text('Create Your Account', style: jk(22, weight: FontWeight.w800, spacing: -0.3)),
                   const SizedBox(height: 24),
-
-                  // ── Row 1: Full Name ──────────────────────────
                   _SignUpField(
                     controller: _fullNameCtrl,
                     hint: 'Full Name',
                     icon: Icons.person_outline_rounded,
                   ),
                   const SizedBox(height: 14),
-
-                  // ── Row 2:  ────────────────
                   Row(
                     children: [
                       Expanded(
@@ -122,8 +145,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-
-                  // ── Row 3: ──────────────
                   Row(
                     children: [
                       Expanded(
@@ -144,8 +165,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-
-
                   Row(
                     children: [
                       Expanded(
@@ -166,26 +185,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-
-
                   if (_error != null) ...[
                     _SignUpErrorBanner(_error!),
                     const SizedBox(height: 14),
                   ],
-
                   const SizedBox(height: 16),
-
-                  // Sign Up Button
                   _loading
                       ? _SignUpLoadingButton()
                       : _SignUpPrimaryButton(
                     label: '+ Create My Account',
                     onTap: _signUp,
                   ),
-
                   const SizedBox(height: 22),
-
-                  // back to login row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -304,7 +315,7 @@ class _SignUpFieldState extends State<_SignUpField> {
               padding: const EdgeInsets.only(left: 14, right: 6),
               child: Icon(widget.icon, size: 20, color: _focused ? AppColors.teal500 : AppColors.ink3),
             ),
-            // TextField with only hint (no helper text)
+
             Expanded(
               child: TextField(
                 controller: widget.controller,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
 import 'login.dart';
+import '../Api/api_client.dart';
 
 class _MenuRow {
   final IconData icon;
@@ -27,6 +28,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _MenuRow(Icons.emoji_events_outlined, AppColors.apricot, AppColors.apricot2, 'Achievements', '12 badges'),
     _MenuRow(Icons.picture_as_pdf_rounded, AppColors.rose, AppColors.rose2, 'Downloads', 'Offline lessons'),
   ];
+
+
+  Future<void> _logout() async {
+    try {
+      final apiClient = ApiClient();
+      await apiClient.logout();
+      print(' Logout successful');
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } catch (e) {
+      print(' Logout error: $e');
+
+      await TokenManager.clearTokens();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -211,11 +234,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           )),
 
-          // logout
+
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 6, 22, 0),
             child: Pressable(
-              onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen())),
+              onTap: _logout,
               child: Container(
                 height: 54,
                 decoration: BoxDecoration(
