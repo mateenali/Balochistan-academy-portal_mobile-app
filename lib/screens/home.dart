@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
-import '../data.dart';
+import '../Api/api_client.dart';
 import 'lesson.dart';
 import 'quiz.dart';
 import 'full_syllabus.dart';
@@ -14,9 +14,134 @@ import 'result_reports.dart';
 import 'complaints.dart';
 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final ValueChanged<int> onTab;
   const HomeScreen({super.key, required this.onTab});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ApiClient _apiClient = ApiClient();
+  Map<String, dynamic>? _user; // from GET /api/auth/me
+  bool _profileLoading = true;
+
+  // subjects for the user's grade — from GET /api/grades/{code}/subjects
+  List<Map<String, dynamic>> _subjects = [];
+  bool _subjectsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() {
+      _profileLoading = true;
+      _subjectsLoading = true;
+      _subjects = []; // clear any stale subjects from a previous session
+    });
+    try {
+      final data = await _apiClient.getCurrentUser();
+      if (!mounted) return;
+      setState(() {
+        _user = (data['user'] as Map?)?.cast<String, dynamic>() ?? data.cast<String, dynamic>();
+        _profileLoading = false;
+      });
+      _loadSubjects();
+    } catch (e) {
+      print('Load Profile Error: $e');
+      if (!mounted) return;
+      setState(() {
+        _profileLoading = false;
+        _subjectsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadSubjects() async {
+    final code = _user?['gradeCode'];
+    if (code == null || '$code'.trim().isEmpty) {
+      // no grade on the account → nothing to show
+      if (mounted) {
+        setState(() {
+          _subjects = [];
+          _subjectsLoading = false;
+        });
+      }
+      return;
+    }
+    setState(() => _subjectsLoading = true);
+    try {
+      final subjects = await _apiClient.getSubjectsForGrade('$code');
+      if (!mounted) return;
+      setState(() {
+        _subjects = subjects;
+        _subjectsLoading = false;
+      });
+    } catch (e) {
+      print('Load Subjects Error: $e');
+      if (!mounted) return;
+      setState(() {
+        _subjects = [];
+        _subjectsLoading = false;
+      });
+    }
+  }
+
+  // Map an API icon name to a Material icon.
+  IconData _subjectIcon(String? name) {
+    switch (name) {
+      case 'calculator':
+        return Icons.calculate_rounded;
+      case 'book-open':
+        return Icons.menu_book_rounded;
+      case 'pen':
+        return Icons.edit_rounded;
+      case 'moon':
+        return Icons.nightlight_round;
+      case 'map':
+        return Icons.map_rounded;
+      case 'microscope':
+        return Icons.science_rounded;
+      case 'flask':
+        return Icons.science_rounded;
+      case 'atom':
+        return Icons.bubble_chart_rounded;
+      case 'leaf':
+        return Icons.spa_rounded;
+      case 'globe':
+        return Icons.public_rounded;
+      case 'code':
+        return Icons.code_rounded;
+      default:
+        return Icons.menu_book_rounded;
+    }
+  }
+
+  // Parse a hex colour like "#3B82F6" into a Color.
+  Color _hexColor(String? hex) {
+    if (hex == null || hex.isEmpty) return AppColors.indigo500;
+    var h = hex.replaceFirst('#', '').trim();
+    if (h.length == 6) h = 'FF$h';
+    final value = int.tryParse(h, radix: 16);
+    return value == null ? AppColors.indigo500 : Color(value);
+  }
+
+  String get _name => (_user?['name'] as String?)?.trim().isNotEmpty == true
+      ? _user!['name'] as String
+      : (_user?['username'] as String? ?? 'Student');
+
+  String get _initials {
+    final parts = _name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+  }
+
+  void onTab(int i) => widget.onTab(i);
 
   void _push(BuildContext c, Widget w) => Navigator.of(c).push(MaterialPageRoute(builder: (_) => w));
 
@@ -36,7 +161,7 @@ class HomeScreen extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Assalam-o-Alaikum 👋', style: jk(12.5, weight: FontWeight.w700, color: AppColors.ink3)),
                   const SizedBox(height: 2),
-                  Text('Hadiya Baloch', style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
+                  Text(_profileLoading ? 'Loading…' : _name, style: jk(21, weight: FontWeight.w800, spacing: -0.3)),
                 ]),
                 Row(children: [
                   _iconBtn(Icons.notifications_none_rounded, dot: true),
@@ -50,7 +175,7 @@ class HomeScreen extends StatelessWidget {
                         gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFD9B8), AppColors.apricot]),
                         boxShadow: cardShadow,
                       ),
-                      child: Center(child: Text('HB', style: jk(16, weight: FontWeight.w800, color: Colors.white))),
+                      child: Center(child: Text(_profileLoading ? '…' : _initials, style: jk(16, weight: FontWeight.w800, color: Colors.white))),
                     ),
                   ),
                 ]),
@@ -181,23 +306,36 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             height: 96,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 22),
-              itemCount: 5,
-              separatorBuilder: (_, __) => const SizedBox(width: 14),
-              itemBuilder: (_, k) {
-                final s = kSubjects[k];
-                return Pressable(
-                  onTap: () => onTab(1),
-                  child: Column(children: [
-                    GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 62, radius: 20, iconSize: 28),
-                    const SizedBox(height: 8),
-                    Text(s.name.split(' ').first, style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink2)),
-                  ]),
-                );
-              },
-            ),
+            child: _subjectsLoading
+                ? const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)))
+                : _subjects.isEmpty
+                    ? Center(
+                        child: Text('No subjects available', style: jk(13, weight: FontWeight.w600, color: AppColors.ink3)),
+                      )
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 22),
+                        itemCount: _subjects.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 14),
+                        itemBuilder: (_, k) {
+                          final s = _subjects[k];
+                          final color = _hexColor(s['color'] as String?);
+                          final name = (s['name'] as String?) ?? 'Subject';
+                          return Pressable(
+                            onTap: () => onTab(1),
+                            child: Column(children: [
+                              GradientTile(
+                                icon: _subjectIcon(s['icon'] as String?),
+                                c1: color,
+                                c2: Color.lerp(color, Colors.black, 0.22)!,
+                                size: 62, radius: 20, iconSize: 28,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(name.split(' ').first, style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink2)),
+                            ]),
+                          );
+                        },
+                      ),
           ),
           const SizedBox(height: 20),
           // streak

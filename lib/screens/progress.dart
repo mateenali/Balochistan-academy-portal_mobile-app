@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../Api/api_client.dart';
 
 class _WeekBar {
   final String day;
@@ -24,8 +25,47 @@ class _Badge {
   const _Badge(this.icon, this.c, this.shadow, this.label);
 }
 
-class ProgressScreen extends StatelessWidget {
+class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
+
+  @override
+  State<ProgressScreen> createState() => _ProgressScreenState();
+}
+
+class _ProgressScreenState extends State<ProgressScreen> {
+  final ApiClient _apiClient = ApiClient();
+  Map<String, dynamic>? _user; // from GET /api/auth/me
+  bool _profileLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _profileLoading = true);
+    try {
+      final data = await _apiClient.getCurrentUser();
+      if (!mounted) return;
+      setState(() {
+        _user = (data['user'] as Map?)?.cast<String, dynamic>() ?? data.cast<String, dynamic>();
+        _profileLoading = false;
+      });
+    } catch (e) {
+      print('Load Profile Error: $e');
+      if (!mounted) return;
+      setState(() => _profileLoading = false);
+    }
+  }
+
+  String get _firstName {
+    final name = (_user?['name'] as String?)?.trim();
+    if (name == null || name.isEmpty) return (_user?['username'] as String? ?? 'there');
+    return name.split(RegExp(r'\s+')).first;
+  }
+
+  String get _coins => '${_user?['coins'] ?? 0}';
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +100,7 @@ class ProgressScreen extends StatelessWidget {
               children: [
                 Text('YOUR PROGRESS', style: jk(11.5, weight: FontWeight.w700, color: AppColors.ink3, spacing: 1.4)),
                 const SizedBox(height: 6),
-                Text('Keep it up, Hadiya!', style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
+                Text(_profileLoading ? 'Keep it up!' : 'Keep it up, $_firstName!', style: jk(27, weight: FontWeight.w800, spacing: -0.5)),
               ],
             ),
           ),
@@ -94,7 +134,7 @@ class ProgressScreen extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.paid_rounded, color: Colors.white, size: 30),
                                     const SizedBox(width: 8),
-                                    Text('2,480', style: jk(40, weight: FontWeight.w800, color: Colors.white, spacing: -1)),
+                                    Text(_profileLoading ? '—' : _coins, style: jk(40, weight: FontWeight.w800, color: Colors.white, spacing: -1)),
                                   ],
                                 ),
                                 const SizedBox(height: 6),

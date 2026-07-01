@@ -22,6 +22,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // bool _langEn = true; // language option disabled
   bool _reminders = true;
 
+  final ApiClient _apiClient = ApiClient();
+  Map<String, dynamic>? _user; // from GET /api/auth/me
+  bool _profileLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _profileLoading = true);
+    try {
+      final data = await _apiClient.getCurrentUser();
+      if (!mounted) return;
+      setState(() {
+        _user = (data['user'] as Map?)?.cast<String, dynamic>() ?? data.cast<String, dynamic>();
+        _profileLoading = false;
+      });
+    } catch (e) {
+      print('Load Profile Error: $e');
+      if (!mounted) return;
+      setState(() => _profileLoading = false);
+    }
+  }
+
+  // ── helpers to derive display values from the API user ──
+  String get _name => (_user?['name'] as String?)?.trim().isNotEmpty == true
+      ? _user!['name'] as String
+      : (_user?['username'] as String? ?? 'Student');
+
+  String get _initials {
+    final parts = _name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+  }
+
+  String get _subtitle {
+    final grade = _user?['gradeCode'];
+    final board = _user?['board'] as String?;
+    final medium = _user?['medium'] as String?;
+    final bits = <String>[
+      if (grade != null && '$grade'.trim().isNotEmpty) 'Grade $grade',
+      if (board != null && board.trim().isNotEmpty) board,
+      if ((grade == null || '$grade'.trim().isEmpty) && medium != null && medium.trim().isNotEmpty) '$medium medium',
+    ];
+    if (bits.isEmpty) return '@${_user?['username'] ?? ''}';
+    return bits.join(' · ');
+  }
+
+  String get _coins => '${_user?['coins'] ?? 0}';
+
   final _rows = [
     _MenuRow(Icons.track_changes, AppColors.indigo400, AppColors.indigo600, 'My goals', 'FSc Pre-Medical'),
     _MenuRow(Icons.calendar_today_rounded, AppColors.teal400, AppColors.teal600, 'Study schedule', 'Daily · 6:00 PM'),
@@ -90,15 +143,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         border: Border.all(color: Colors.white.withOpacity(0.4), width: 3),
                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 16), spreadRadius: -10)],
                       ),
-                      child: Center(child: Text('HB', style: jk(30, weight: FontWeight.w800, color: Colors.white))),
+                      child: Center(child: Text(_profileLoading ? '…' : _initials, style: jk(30, weight: FontWeight.w800, color: Colors.white))),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hadiya Baloch', style: jk(22, weight: FontWeight.w800, color: Colors.white)),
-                          Text('Class 10 · Quetta', style: jk(13.5, weight: FontWeight.w600, color: Colors.white70)),
+                          Text(_profileLoading ? 'Loading…' : _name, style: jk(22, weight: FontWeight.w800, color: Colors.white)),
+                          Text(_profileLoading ? ' ' : _subtitle, style: jk(13.5, weight: FontWeight.w600, color: Colors.white70)),
                           const SizedBox(height: 7),
                           Row(
                             children: [
@@ -125,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 child: Row(
                   children: [
-                    _statCol('2,480', 'Coins'),
+                    _statCol(_profileLoading ? '—' : _coins, 'Coins'),
                     _divider(),
                     _statCol('156', 'Lessons'),
                     _divider(),

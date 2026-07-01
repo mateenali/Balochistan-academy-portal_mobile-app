@@ -261,6 +261,7 @@ class _PressableState extends State<_Pressable> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) => setState(() => _s = 0.96),
       onTapUp: (_) => setState(() => _s = 1),
       onTapCancel: () => setState(() => _s = 1),

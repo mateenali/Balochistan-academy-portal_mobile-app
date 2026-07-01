@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets.dart';
 import '../data.dart';
+import '../Api/api_client.dart';
 import 'subject_detail.dart';
 
 class SubjectsScreen extends StatefulWidget {
@@ -21,13 +22,110 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   String get selectedClass => classes[selectedIndex];
   bool get viewingCompleted => selectedIndex < enrolledIndex;
 
-  Widget _subjectCard(BuildContext context, Subject s) {
-    final done = s.progress >= 100 || viewingCompleted;
+  // ── API: subjects for the logged-in user's grade ──
+  final ApiClient _apiClient = ApiClient();
+  Map<String, dynamic>? _user;
+  List<Map<String, dynamic>> _subjects = [];
+  bool _subjectsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _subjectsLoading = true;
+      _subjects = [];
+    });
+    try {
+      final data = await _apiClient.getCurrentUser();
+      _user = (data['user'] as Map?)?.cast<String, dynamic>() ?? data.cast<String, dynamic>();
+      final code = _user?['gradeCode'];
+      if (code == null || '$code'.trim().isEmpty) {
+        // account has no grade → no subjects
+        if (mounted) setState(() => _subjectsLoading = false);
+        return;
+      }
+      final subjects = await _apiClient.getSubjectsForGrade('$code');
+      if (!mounted) return;
+      setState(() {
+        _subjects = subjects;
+        _subjectsLoading = false;
+      });
+    } catch (e) {
+      print('Load Subjects Error: $e');
+      if (!mounted) return;
+      setState(() {
+        _subjects = [];
+        _subjectsLoading = false;
+      });
+    }
+  }
+
+  IconData _subjectIcon(String? name) {
+    switch (name) {
+      case 'calculator':
+        return Icons.calculate_rounded;
+      case 'book-open':
+        return Icons.menu_book_rounded;
+      case 'pen':
+        return Icons.edit_rounded;
+      case 'moon':
+        return Icons.nightlight_round;
+      case 'map':
+        return Icons.map_rounded;
+      case 'microscope':
+        return Icons.science_rounded;
+      case 'flask':
+        return Icons.science_rounded;
+      case 'atom':
+        return Icons.bubble_chart_rounded;
+      case 'leaf':
+        return Icons.spa_rounded;
+      case 'globe':
+        return Icons.public_rounded;
+      case 'code':
+        return Icons.code_rounded;
+      default:
+        return Icons.menu_book_rounded;
+    }
+  }
+
+  Color _hexColor(String? hex) {
+    if (hex == null || hex.isEmpty) return AppColors.indigo500;
+    var h = hex.replaceFirst('#', '').trim();
+    if (h.length == 6) h = 'FF$h';
+    final value = int.tryParse(h, radix: 16);
+    return value == null ? AppColors.indigo500 : Color(value);
+  }
+
+  // Build a Subject (for the detail screen) from an API subject map.
+  Subject _toSubject(Map<String, dynamic> m) {
+    final color = _hexColor(m['color'] as String?);
+    return Subject(
+      m['id']?.toString() ?? (m['name'] as String? ?? 'subject'),
+      (m['name'] as String?) ?? 'Subject',
+      (m['nameUr'] as String?) ?? '',
+      _subjectIcon(m['icon'] as String?),
+      color,
+      Color.lerp(color, Colors.black, 0.22)!,
+      0,
+      0,
+    );
+  }
+
+  Widget _subjectCard(BuildContext context, Map<String, dynamic> m) {
+    final color = _hexColor(m['color'] as String?);
+    final dark = Color.lerp(color, Colors.black, 0.22)!;
+    final name = (m['name'] as String?) ?? 'Subject';
+    final done = viewingCompleted;
     return AppCard(
       clip: true,
       padding: EdgeInsets.zero,
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => SubjectDetailScreen(subject: s, readOnly: viewingCompleted),
+        builder: (_) => SubjectDetailScreen(subject: _toSubject(m), readOnly: viewingCompleted),
       )),
       child: Stack(
         children: [
@@ -36,7 +134,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             right: -26, top: -26,
             child: Container(
               width: 88, height: 88,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: s.c1.withOpacity(0.10)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.10)),
             ),
           ),
           Padding(
@@ -48,33 +146,24 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GradientTile(icon: s.icon, c1: s.c1, c2: s.c2, size: 46, radius: 15, iconSize: 22),
-                    done
-                        ? Container(
-                            width: 26, height: 26,
-                            decoration: const BoxDecoration(color: AppColors.successBg, shape: BoxShape.circle),
-                            child: const Icon(Icons.check_rounded, size: 15, color: AppColors.success),
-                          )
-                        : Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                            decoration: BoxDecoration(color: s.c1.withOpacity(0.14), borderRadius: BorderRadius.circular(999)),
-                            child: Text('${s.progress}%', style: jk(11.5, weight: FontWeight.w800, color: s.c2)),
-                          ),
+                    GradientTile(icon: _subjectIcon(m['icon'] as String?), c1: color, c2: dark, size: 46, radius: 15, iconSize: 22),
+                    if (done)
+                      Container(
+                        width: 26, height: 26,
+                        decoration: const BoxDecoration(color: AppColors.successBg, shape: BoxShape.circle),
+                        child: const Icon(Icons.check_rounded, size: 15, color: AppColors.success),
+                      ),
                   ],
                 ),
-                const SizedBox(height: 13),
-                Text(s.name, style: jk(15.5, weight: FontWeight.w800, spacing: -0.2)),
-                const SizedBox(height: 3),
-                Text('${s.lessons} lessons', style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                const SizedBox(height: 14),
+                Text(name, style: jk(15.5, weight: FontWeight.w800, spacing: -0.2)),
                 const Spacer(),
-                ProgressBar(value: done ? 100 : s.progress.toDouble(), colors: [s.c1, s.c2], height: 6),
-                const SizedBox(height: 9),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      done ? 'Completed' : 'Continue',
-                      style: jk(12, weight: FontWeight.w700, color: done ? AppColors.success : s.c2),
+                      done ? 'Completed' : 'Open',
+                      style: jk(12.5, weight: FontWeight.w700, color: done ? AppColors.success : dark),
                     ),
                     Icon(done ? Icons.visibility_rounded : Icons.arrow_forward_rounded, size: 15, color: AppColors.ink3),
                   ],
@@ -119,6 +208,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           const SizedBox(height: 16),
 
           // class selector
+          if (_subjects.isNotEmpty)
           SizedBox(
             height: 40,
             child: ListView.separated(
@@ -162,6 +252,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           ),
 
           // status banner — read-only for completed classes, progress for the enrolled one
+          if (_subjects.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 14, 22, 0),
             child: viewingCompleted
@@ -220,18 +311,41 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           ),
 
           // subject grid
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: 0.76,
+          if (_subjectsLoading)
+            const Padding(
+              padding: EdgeInsets.only(top: 60),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_subjects.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 50, 22, 0),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.menu_book_outlined, size: 44, color: AppColors.ink3),
+                    const SizedBox(height: 12),
+                    Text('No subjects available', style: jk(15, weight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text('Your account has no grade assigned yet',
+                        textAlign: TextAlign.center,
+                        style: jk(12.5, weight: FontWeight.w600, color: AppColors.ink3)),
+                  ],
+                ),
               ),
-              itemCount: kSubjects.length,
-              itemBuilder: (_, i) => _subjectCard(context, kSubjects[i]),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: 0.95,
+                ),
+                itemCount: _subjects.length,
+                itemBuilder: (_, i) => _subjectCard(context, _subjects[i]),
+              ),
             ),
-          ),
         ],
       ),
     );

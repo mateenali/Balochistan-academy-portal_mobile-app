@@ -199,6 +199,18 @@ class ApiClient {
     }
   }
 
+  // ── GET SUBJECTS FOR GRADE ──────────────────────────────────
+  Future<List<Map<String, dynamic>>> getSubjectsForGrade(String code) async {
+    try {
+      final response = await _dio.get('/api/grades/$code/subjects');
+      final data = response.data as List;
+      return data.cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      print('Get Subjects Error: ${e.response?.data}');
+      throw _handleError(e);
+    }
+  }
+
   // ── ERROR HANDLER ──────────────────────────────────────────
   String _handleError(DioException e) {
     if (e.response != null) {
